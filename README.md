@@ -1,4 +1,4 @@
-# NFL Offense Stats Dashboard
+# Hackathon Dashboard 
 
 ![Dashboard preview](preview.png)
 
