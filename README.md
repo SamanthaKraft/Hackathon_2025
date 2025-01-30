@@ -1,6 +1,6 @@
 # Hackathon Dashboard 
 
-![Dashboard preview](preview.png)
+![Dashboard preview](preview1.png)
 
 This project is a Dash application that visualizes Immune health data
 
