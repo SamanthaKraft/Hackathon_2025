@@ -2,16 +2,11 @@
 
 ![Dashboard preview](preview.png)
 
-This project is a Dash application that visualizes NFL offense statistics. It includes interactive charts for player and team stats over multiple seasons, providing insights into various performance metrics.
+This project is a Dash application that visualizes Immune health data
 
 ## Features
 
-- **Player Stats by Position**: View statistics for Running Backs, Wide Receivers, Tight Ends, and Quarterbacks.
-- **Player Selection**: Filter and visualize statistics for any player.
-- **Team Stats by Year**: Analyze team performance metrics over different seasons.
-- **Offense Stats Distribution Histogram**: Visualize the distribution of various offensive stats with a customizable histogram.
-- **Compare Offensive Stats Scatter Plot**: Compare two different offensive stats across teams with a dynamic scatter plot.
-- **Interactive Visualizations**: Use dropdowns and tabs to customize the data displayed in charts.
+- **Compare Protiens to cells
 
 ## Installation
 
@@ -53,10 +48,7 @@ This project is a Dash application that visualizes NFL offense statistics. It in
 ## Acknowledgements
 - Dash by Plotly: https://dash.plotly.com/
 - Bootstrap Components: https://dash-bootstrap-components.opensource.faculty.ai/
-- Dataset: [NFL Stats 1999-2022](https://www.kaggle.com/datasets/philiphyde1/nfl-stats-1999-2022/code) by Funk Monarch on [Kaggle](https://www.kaggle.com/)
 
 ## License
 This project is for personal portfolio use and is not intended for commercial distribution. Feel free to explore and learn from the code, but please contact me if you wish to use it for other purposes.
 
-## Contributions
-This project is part of my personal portfolio, and while I'm not actively seeking contributions, I welcome any feedback or suggestions. If you have ideas for improvements or encounter any issues, feel free to reach out to me. Your insights are greatly appreciated!
