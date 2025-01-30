@@ -19,8 +19,8 @@ This project is a Dash application that visualizes Immune health data
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/Alfredomg7/NFLOffenseStatsDashboard.git
-   cd NFLOffenseStatsDashboard
+   git clone https://github.com/SamanthaKraft/Hackathon_2025.git
+   cd Hackathon_2025
    ```
 
 2. **Install the dependencies:**
@@ -38,8 +38,8 @@ This project is a Dash application that visualizes Immune health data
 ## Project Structure
 - `app.py`: Main application module containing the Dash app setup and layout.
 - `utilities.py`: Utility functions for data loading, formatting, and creating callbacks.
-- `config.py`: Configuration module with lists of statistics and team colors.
-- `data/offense_yearly_data.csv`: Dataset with NFL Offense Stats used for the dashboard.
+- `config.py`: Configuration module 
+- `data`: Datasets in this folder
 
 ## Usage
 - Run the application and open your browser to `http://127.0.0.1:8050`.
