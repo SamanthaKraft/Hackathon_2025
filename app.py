@@ -155,8 +155,8 @@ def update_dot_graph_1(row_name):
     ans_both = ans1.merge(ans2, on=['target','Marker'], how='inner')
 
     fig = px.scatter(
-        ans1,
-        x='Marker',
+        ans_both,
+        x='CorrelationPerc',
         y='CorrelationMFI',
         title=f'Correlation of {row_name} with Markers',
         hover_data=['Marker']
