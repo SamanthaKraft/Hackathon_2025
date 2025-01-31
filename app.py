@@ -44,7 +44,7 @@ app.layout = html.Div([
     # Shared dropdowns for both graphs
     html.Div(className='row', children=[
         html.Div(className='col-6 mx-auto', children=[
-            html.Label('Select Targets (Lines for Line Graphs, Dots for Dot Plot):'),
+            html.Label('Select proteins for your shake'),
             dcc.Dropdown(
                 id='target-selector',
                 options=[{'label': target, 'value': target} for target in all_targets], 
@@ -54,7 +54,7 @@ app.layout = html.Div([
             ),
         ]),
         html.Div(className='col-6 mx-auto', children=[
-            html.Label('Select Cells (X-axis Labels):'),
+            html.Label('Select cell types'),
             dcc.Dropdown(
                 id='cell-selector',
                 options=[{'label': cell, 'value': cell} for cell in all_cells], 
@@ -68,11 +68,11 @@ app.layout = html.Div([
     # Row for Line Graphs (Top Row)
     html.Div(className='row', children=[
         html.Div(className='col-6', children=[
-            html.H2('Relative PE UPenn', className='text-center'),
+            html.H2('Mean expression', className='text-center'),
             dcc.Graph(id='line-graph-1'),
         ]),
         html.Div(className='col-6', children=[
-            html.H2('Percent Total UPenn', className='text-center'),
+            html.H2('Percent positive', className='text-center'),
             dcc.Graph(id='line-graph-2'),
         ]),
     ]),
@@ -81,27 +81,27 @@ app.layout = html.Div([
     html.Div(className='row mt-4', children=[
         # Left bottom dot plot (Select Target)
         html.Div(className='col-6', children=[
-            html.Label('Select Target to Highlight in Dot Plot:'),
+            html.Label('Select a protein marker to find similar ones'),
             dcc.Dropdown(
                 id='highlight-target-selector',
                 options=[{'label': target, 'value': target} for target in all_targets], 
                 value=default_highlight_target,  
                 className='w-75 mx-auto mb-3'
             ),
-            html.H2('Dot Plot of Targets', className='text-center'),
+            html.H2('Correlation of all proteins with selected one', className='text-center'),
             dcc.Graph(id='dot-graph-1'),
         ]),
 
         # Right bottom dot plot (Select Cell)
         html.Div(className='col-6', children=[
-            html.Label('Select Cell to Highlight in Dot Plot:'),
+            html.Label('Select cell type to find proteins that distinguish it'),
             dcc.Dropdown(
                 id='highlight-cell-selector',
                 options=[{'label': cell, 'value': cell} for cell in all_cells], 
                 value=default_cell_plot,  
                 className='w-75 mx-auto mb-3'
             ),
-            html.H2('Dot Plot of Cells', className='text-center'),
+            html.H2('Heatmap of optimal proteins for your shake', className='text-center'),
             dcc.Graph(id='dot-graph-2'),
         ]),
     ]),
@@ -122,13 +122,16 @@ def update_line_graphs(selected_targets, selected_cells):
     df1_melted = df1_filtered.melt(id_vars='target', var_name='cell', value_name='expression')
     df1_melted['expression'] = np.arcsinh(df1_melted['expression']/600)
 
-    fig1 = px.line(df1_melted, x='cell', y='expression', color='target', title='Relative PE UPenn')
+    fig1 = px.line(df1_melted, x='cell', y='expression', color='target') #, title='Relative PE UPenn')
+    fig1.update_layout(yaxis_title="Mean expression", 
+                      xaxis_title="Cell type")
 
     df2_filtered = df2[df2['target'].isin(selected_targets)][['target'] + selected_cells]
     df2_melted = df2_filtered.melt(id_vars='target', var_name='cell', value_name='expression')
 
-    fig2 = px.line(df2_melted, x='cell', y='expression', color='target', title='Percent Total UPenn')
-
+    fig2 = px.line(df2_melted, x='cell', y='expression', color='target') #, title='Percent Total UPenn')
+    fig2.update_layout(yaxis_title="Percentage of cells positive", 
+                      xaxis_title="Cell type")
     return fig1, fig2
 
 # Callback to update dot plot (Highlight Target)
@@ -159,7 +162,7 @@ def update_dot_graph_1(row_name):
         ans_both,
         x='CorrelationPerc',
         y='CorrelationMFI',
-        title=f'Correlation of {row_name} with Markers',
+        # title=f'Correlation of {row_name} with Markers',
         hover_data=['Marker']
     )
     return fig
@@ -196,7 +199,7 @@ def update_dot_graph_2(selected_cell):
 
 
     fig = px.imshow(np.arcsinh(df1_heat/600), 
-                    labels=dict(x="Features", y="Categories", color="Value"),
+                    labels=dict(x="Cell types", y="Optimal proteins", color="MFI"),
                     color_continuous_scale='viridis',  # Change color scale
                     text_auto=True)  # Show values inside cells
 
