@@ -140,7 +140,7 @@ def update_line_graphs(selected_targets, selected_cells):
     Output('dot-graph', 'figure'),
     [Input('highlight-target-selector', 'value')]  # Selected target to highlight
 )
-def update_dot_graph(highlight_target):
+def update_dot_graph(row_name):
     """
     Updates the dot graph to highlight a selected target in pink.
 
@@ -151,24 +151,38 @@ def update_dot_graph(highlight_target):
         plotly.graph_objs._figure.Figure: Updated dot graph.
     """
     # Combine both datasets
-    df_combined = pd.concat([df1, df2])
+    # df_combined = pd.concat([df1, df2])
 
     # Add a column to distinguish the highlighted target
-    df_combined['highlight'] = df_combined['target'].apply(lambda x: 'Highlighted' if x == highlight_target else 'Other')
+    # df_combined['highlight'] = df_combined['target'].apply(lambda x: 'Highlighted' if x == highlight_target else 'Other')
+
+    df1_copy = df1.copy(deep=True)
+    df1_copy.set_index('target', inplace=True)
+    df1_corr = df1_copy.T.corr()
+    
+    melted_corr1 = df1_corr.reset_index().melt(id_vars='target', var_name='Marker', value_name='CorrelationMFI')
+    ans1 = melted_corr1[melted_corr1['target'] == row_name].reset_index(drop=True)
+    
+    df2_copy = df2.copy(deep=True)
+    df2_copy.set_index('target', inplace=True)
+    df2_corr = df2_copy.T.corr()
+    
+    melted_corr2 = df2_corr.reset_index().melt(id_vars='target', var_name='Marker', value_name='CorrelationPerc')
+    ans2 = melted_corr2[melted_corr2['target'] == row_name].reset_index(drop=True)
+    
+    ans_both = ans1.merge(ans2, on=['target','Marker'], how='inner')
 
     # Create dot plot
     fig = px.scatter(
-        df_combined,
-        x='target',
-        y=df_combined.columns[1:],  # All cell expression levels
-        color='highlight',
-        title='Dot Plot of Targets',
-        labels={'highlight': 'Highlighted Target'},
-        color_discrete_map={'Highlighted': 'pink', 'Other': 'blue'}  # Set pink color for highlight
+        ans_both,
+        x='CorrelationPerc',
+        y='CorrelationMFI',
+        title='Correlation between markers and ' + row_name,
+        hover_data=['Marker']
     )
 
-    fig.update_xaxes(title_text='Targets')
-    fig.update_yaxes(title_text='Expression Levels')
+    # fig.update_xaxes(title_text='Targets')
+    # fig.update_yaxes(title_text='Expression Levels')
 
     return fig
 
