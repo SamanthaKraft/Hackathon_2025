@@ -31,6 +31,34 @@ default_cells = ['mDC', 'pDC']  # Default X-axis (cells)
 default_targets = ['CD11b', 'CD20']  # Default Lines (targets)
 default_highlight_target = all_targets[0]  # Default highlighted target
 
+def custom_summary(group):
+    max_mfi_in  = group[group['Celltype'].str.contains(pattern, regex=True)]['MFI'].max()  # Replace with your logic
+    max_mfi_out = group[~group['Celltype'].str.contains(pattern, regex=True)]['MFI'].max()  # Replace with your logic
+    max_perc_in  = group[group['Celltype'].str.contains(pattern, regex=True)]['Perc'].max()  # Replace with your logic
+    max_perc_out  = group[~group['Celltype'].str.contains(pattern, regex=True)]['Perc'].max()  # Replace with your logic
+
+    return pd.Series({
+        'Max_MFI_in': max_mfi_in,
+        'Max_MFI_out': max_mfi_out,
+        'Max_Perc_in': max_perc_in,
+        'Max_Perc_out': max_perc_out
+    })
+
+df1_melt = df1.melt(id_vars='target', var_name='Celltype', value_name='MFI')
+df2_melt = df2.melt(id_vars='target', var_name='Celltype', value_name='Perc')
+df_both_melt = df1_melt.merge(df2_melt, on=['target','Celltype'], how='inner')
+
+pattern = 'B cell'  # Change this pattern as needed
+df_summary = df_both_melt.groupby('target').apply(custom_summary).reset_index()
+df_filtered = df_summary[(df_summary['Max_MFI_in'] > df_summary['Max_MFI_out']) & (df_summary['Max_Perc_in'] > 0.5)]
+
+df1_heat = df1[df1['target'].isin(df_filtered['target'])].melt(id_vars='target', var_name='Celltype', value_name='MFI')
+df1_heat['MFI'] = np.arcsinh(df1_heat['MFI']/600)
+print(df1_heat)
+
+fig = px.imshow(df1_heat, labels=dict(x="Celltype", y="target", color="MFI"),
+                color_continuous_scale='viridis', text_auto=True)
+
 # Initialize Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 
@@ -156,6 +184,7 @@ def update_dot_graph(row_name):
     # Add a column to distinguish the highlighted target
     # df_combined['highlight'] = df_combined['target'].apply(lambda x: 'Highlighted' if x == highlight_target else 'Other')
 
+    # compute correlation matrix between all rows: MFI
     df1_copy = df1.copy(deep=True)
     df1_copy.set_index('target', inplace=True)
     df1_corr = df1_copy.T.corr()
@@ -163,6 +192,7 @@ def update_dot_graph(row_name):
     melted_corr1 = df1_corr.reset_index().melt(id_vars='target', var_name='Marker', value_name='CorrelationMFI')
     ans1 = melted_corr1[melted_corr1['target'] == row_name].reset_index(drop=True)
     
+    # compute correlation matrix between all rows: percentages
     df2_copy = df2.copy(deep=True)
     df2_copy.set_index('target', inplace=True)
     df2_corr = df2_copy.T.corr()
@@ -185,6 +215,7 @@ def update_dot_graph(row_name):
     # fig.update_yaxes(title_text='Expression Levels')
 
     return fig
+
 
 # Run app
 if __name__ == '__main__':
