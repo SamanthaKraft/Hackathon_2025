@@ -32,6 +32,7 @@ default_targets = ['CD11b', 'CD20']  # Default Lines (targets)
 default_highlight_target = all_targets[0]  # Default highlighted target
 default_highlight_cell = all_cells[0]  # Default highlighted cell
 
+
 # Initialize Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 
@@ -134,6 +135,7 @@ def update_line_graphs(selected_targets, selected_cells):
     Output('dot-graph-1', 'figure'),
     [Input('highlight-target-selector', 'value')]
 )
+
 def update_dot_graph_1(row_name):
     df1_copy = df1.copy(deep=True)
     df1_copy.set_index('target', inplace=True)
@@ -141,6 +143,16 @@ def update_dot_graph_1(row_name):
     
     melted_corr1 = df1_corr.reset_index().melt(id_vars='target', var_name='Marker', value_name='CorrelationMFI')
     ans1 = melted_corr1[melted_corr1['target'] == row_name].reset_index(drop=True)
+
+    # compute correlation matrix between all rows: percentages
+    df2_copy = df2.copy(deep=True)
+    df2_copy.set_index('target', inplace=True)
+    df2_corr = df2_copy.T.corr()
+    
+    melted_corr2 = df2_corr.reset_index().melt(id_vars='target', var_name='Marker', value_name='CorrelationPerc')
+    ans2 = melted_corr2[melted_corr2['target'] == row_name].reset_index(drop=True)
+    
+    ans_both = ans1.merge(ans2, on=['target','Marker'], how='inner')
 
     fig = px.scatter(
         ans1,
@@ -157,17 +169,38 @@ def update_dot_graph_1(row_name):
     [Input('highlight-cell-selector', 'value')]
 )
 def update_dot_graph_2(selected_cell):
-    df1_melted = df1.melt(id_vars='target', var_name='cell', value_name='expression')
-    df1_filtered = df1_melted[df1_melted['cell'] == selected_cell]
+    pattern = selected_cell
+    
+    def custom_summary(group):
+        max_mfi_in  = group[group['Celltype'].str.contains(pattern, regex=True)]['MFI'].max()  # Replace with your logic
+        max_mfi_out = group[~group['Celltype'].str.contains(pattern, regex=True)]['MFI'].max()  # Replace with your logic
+        max_perc_in  = group[group['Celltype'].str.contains(pattern, regex=True)]['Perc'].max()  # Replace with your logic
+        max_perc_out  = group[~group['Celltype'].str.contains(pattern, regex=True)]['Perc'].max()  # Replace with your logic
 
-    fig = px.scatter(
-        df1_filtered,
-        x='target',
-        y='expression',
-        title=f'Expression Levels for {selected_cell}',
-        hover_data=['target']
-    )
+        return pd.Series({
+            'Max_MFI_in': max_mfi_in,
+            'Max_MFI_out': max_mfi_out,
+            'Max_Perc_in': max_perc_in,
+            'Max_Perc_out': max_perc_out
+        })
+
+    df1_melt = df1.melt(id_vars='target', var_name='Celltype', value_name='MFI')
+    df2_melt = df2.melt(id_vars='target', var_name='Celltype', value_name='Perc')
+    df_both_melt = df1_melt.merge(df2_melt, on=['target','Celltype'], how='inner')
+
+    df_summary = df_both_melt.groupby('target').apply(custom_summary).reset_index()
+    df_filtered = df_summary[(df_summary['Max_MFI_in'] > df_summary['Max_MFI_out']) & (df_summary['Max_Perc_in'] > 0.5)]
+
+    df1_heat = df1[df1['target'].isin(df_filtered['target'])].set_index('target')
+
+
+    fig = px.imshow(np.arcsinh(df1_heat/600), 
+                    labels=dict(x="Features", y="Categories", color="Value"),
+                    color_continuous_scale='viridis',  # Change color scale
+                    text_auto=True)  # Show values inside cells
+
     return fig
+
 
 # Run app
 if __name__ == '__main__':
