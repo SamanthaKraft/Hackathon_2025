@@ -36,7 +36,7 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 
 # Layout
 app.layout = html.Div([
-    html.H1('Comparison of Two Datasets', className='text-center pb-3'),
+    html.H1('Immune Health-BD CD Maps', className='text-center pb-3'),
 
     # Shared dropdowns for both graphs
     html.Div(className='row', children=[
