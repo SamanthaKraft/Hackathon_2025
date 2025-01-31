@@ -29,6 +29,7 @@ all_cells = list(set(df1_cells + df2_cells))
 # Default selections
 default_cells = ['mDC', 'pDC']  # Default X-axis (cells)
 default_targets = ['CD11b', 'CD20']  # Default Lines (targets)
+default_cell_plot = 'pDC'
 default_highlight_target = all_targets[0]  # Default highlighted target
 default_highlight_cell = all_cells[0]  # Default highlighted cell
 
@@ -97,7 +98,7 @@ app.layout = html.Div([
             dcc.Dropdown(
                 id='highlight-cell-selector',
                 options=[{'label': cell, 'value': cell} for cell in all_cells], 
-                value=default_highlight_cell,  
+                value=default_cell_plot,  
                 className='w-75 mx-auto mb-3'
             ),
             html.H2('Dot Plot of Cells', className='text-center'),
